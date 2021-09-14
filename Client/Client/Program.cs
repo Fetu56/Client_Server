@@ -16,24 +16,22 @@ namespace Client {
                 socket.Connect(iPEndPoint);
                 int bytes = 0;
                 byte[] data = new byte[256];
-
-                data = Encoding.Unicode.GetBytes(Console.ReadLine());
-                socket.Send(data);
+                Console.WriteLine($"Welcome to server[{ip}], enter your message to get words count:");
+                    data = Encoding.Unicode.GetBytes(Console.ReadLine());
+                    socket.Send(data);
                     StringBuilder stringBuilder = new StringBuilder();
-                while (true) {
-
-                    
-
-                    do {
+                    do
+                    {
                         bytes = socket.Receive(data);
                         stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socket.Available > 0);
                     Console.WriteLine($"Got answer from server: {stringBuilder.ToString()}");
-                }
+                
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
             }
+            Console.Read();
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -17,7 +19,7 @@ namespace Server {
 
                 while (true) {
                     Socket socketClient = socket.Accept();
-
+                    Console.WriteLine("Registrated new user.");
                     StringBuilder stringBuilder = new StringBuilder();
 
                     int bytes = 0;
@@ -28,31 +30,34 @@ namespace Server {
                         stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socketClient.Available > 0);
 
-                    Console.WriteLine($"Got data {Encoding.Unicode.GetString(data)} form client, answer sended.");
-                    switch(Encoding.Unicode.GetString(data).Split(',')[2].ToCharArray()[0]) {
-                        case '+':
-                            data = Encoding.Unicode.GetBytes(Encoding.Unicode.GetString(data).Split(',')[0] + Encoding.Unicode.GetString(data).Split(',')[2] + Encoding.Unicode.GetString(data).Split(',')[1] + " = " + (int.Parse(Encoding.Unicode.GetString(data).Split(',')[0]) + int.Parse(Encoding.Unicode.GetString(data).Split(',')[1])).ToString());
-                            break;
-                        case '-':
-                            data = Encoding.Unicode.GetBytes(Encoding.Unicode.GetString(data).Split(',')[0] + Encoding.Unicode.GetString(data).Split(',')[2] + Encoding.Unicode.GetString(data).Split(',')[1] + " = " + (int.Parse(Encoding.Unicode.GetString(data).Split(',')[0]) - int.Parse(Encoding.Unicode.GetString(data).Split(',')[1])).ToString());
-                            break;
-                        case '*':
-                            data = Encoding.Unicode.GetBytes(Encoding.Unicode.GetString(data).Split(',')[0] + Encoding.Unicode.GetString(data).Split(',')[2] + Encoding.Unicode.GetString(data).Split(',')[1] + " = " + (int.Parse(Encoding.Unicode.GetString(data).Split(',')[0]) * int.Parse(Encoding.Unicode.GetString(data).Split(',')[1])).ToString());
-                            break;
-                        case '/':
-                            data = Encoding.Unicode.GetBytes(Encoding.Unicode.GetString(data).Split(',')[0] + Encoding.Unicode.GetString(data).Split(',')[2] + Encoding.Unicode.GetString(data).Split(',')[1] + " = " + (int.Parse(Encoding.Unicode.GetString(data).Split(',')[0]) / int.Parse(Encoding.Unicode.GetString(data).Split(',')[1])).ToString());
-                            break;
-                    }
-                    
-                    socketClient.Send(data);
 
-                    //socketClient.Shutdown(SocketShutdown.Both);
-                    //socketClient.Close();
+
+                    Console.WriteLine($"Got message from client: {stringBuilder}. Words count sended.");
+
+                    socketClient.Send(Encoding.Unicode.GetBytes(GetWordsCount(stringBuilder.ToString())));
+
+                    socketClient.Shutdown(SocketShutdown.Both);
+                    socketClient.Close();
                 }
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
             }
+        }
+        static string GetWordsCount(string getStr)
+        {
+            string retStr = new string("Words:");
+            List<KeyValuePair<int, string>> words = new List<KeyValuePair<int, string>>();
+            getStr.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(x => {
+                if (words.Where(y => y.Value == x.ToLower()).Count() > 0)
+                    words[words.IndexOf(words.Find(y => y.Value == x.ToLower()))] = new KeyValuePair<int, string>(words.Find(y => y.Value == x.ToLower()).Key + 1, x.ToLower());
+                else
+                    words.Add(new KeyValuePair<int, string>(1, x.ToLower()));
+            });
+
+
+            words.ForEach(x => retStr += $" {x.Value} - {x.Key},");
+            return retStr;
         }
     }
 }
