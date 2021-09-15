@@ -23,37 +23,47 @@ namespace Server {
                     Console.WriteLine("Registrated new user.");
                     StringBuilder stringBuilder = new StringBuilder();
 
-                    int bytes = 0;
-                    byte[] data = new byte[256];
-
-                    do {
-                        bytes = socketClient.Receive(data);
-                        stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                    } while (socketClient.Available > 0);
-
-
-
-                    string filename = stringBuilder.ToString();
-                    Console.WriteLine($"Got file name from client. Name of file: {filename}");
-
-                    socketClient.Send(Encoding.Unicode.GetBytes("Yes"));
-
-                    bytes = 0;
-                    data = new byte[256];
-                    List<byte> listData = new List<byte>();
-                    stringBuilder.Clear();
-                    do
+                    int bytes;
+                    byte[] data;
+                    while (true)
                     {
-                        bytes = socketClient.Receive(data);
-                        for(int i = 0; i < data.Length; i++)
+                        stringBuilder.Clear();
+                        bytes = 0;
+                        data = new byte[256];
+                        do
                         {
-                            listData.Add(data[i]);
-                        }
-                        
-                        stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                    } while (socketClient.Available > 0);
+                            bytes = socketClient.Receive(data);
+                            stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                        } while (socketClient.Available > 0);
 
-                    File.WriteAllBytes(filename, listData.ToArray());
+
+
+                        string filename = stringBuilder.ToString();
+                        Console.WriteLine($"Got file name from client. Name of file: {filename}");
+
+                        socketClient.Send(Encoding.Unicode.GetBytes("Yes"));
+
+                        bytes = 0;
+                        data = new byte[256];
+                        List<byte> listData = new List<byte>();
+                        stringBuilder.Clear();
+
+
+                        do
+                        {
+                            bytes = socketClient.Receive(data);
+                            for (int i = 0; i < data.Length; i++)
+                            {
+                                listData.Add(data[i]);
+                            }
+                            stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                        } while (socketClient.Available > 0);
+
+                        File.WriteAllBytes(filename, listData.ToArray());
+
+                        socketClient.Send(Encoding.Unicode.GetBytes("Good"));
+                    }
+                    
 
                     socketClient.Shutdown(SocketShutdown.Both);
                     socketClient.Close();
