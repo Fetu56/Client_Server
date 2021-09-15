@@ -19,9 +19,9 @@ namespace Client {
                 byte[] data = new byte[256];
                 Console.WriteLine($"Welcome to server[{ip}]. Enter name of txt file to send:");
                 string input = Console.ReadLine();
-                if(File.Exists(input) && input.Split('.')[1] == "txt")
+                if(File.Exists(input))
                 {
-                    data = File.ReadAllBytes(input);
+                    data = Encoding.Unicode.GetBytes(input);
                     socket.Send(data);
                     StringBuilder stringBuilder = new StringBuilder();
                     do
@@ -30,6 +30,14 @@ namespace Client {
                         stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socket.Available > 0);
                     Console.WriteLine($"Got answer from server: {stringBuilder.ToString()}");
+                    if(stringBuilder.ToString() == "Yes")
+                    {
+                        data = File.ReadAllBytes(input);
+                        
+                            socket.Send(data);
+                        
+                    }
+                    
                 }
                 else
                 {

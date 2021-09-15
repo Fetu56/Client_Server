@@ -28,14 +28,32 @@ namespace Server {
 
                     do {
                         bytes = socketClient.Receive(data);
+                        stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socketClient.Available > 0);
 
 
 
-                    Console.WriteLine($"Got file from client. Text in file: {stringBuilder.ToString()}");
-                    File.WriteAllBytes(DateTime.Now.ToString().Replace('.','_').Replace(':', '-').Replace(' ', '_')+".txt", data);
+                    string filename = stringBuilder.ToString();
+                    Console.WriteLine($"Got file name from client. Name of file: {filename}");
 
-                    socketClient.Send(Encoding.Unicode.GetBytes("File succesful got."));
+                    socketClient.Send(Encoding.Unicode.GetBytes("Yes"));
+
+                    bytes = 0;
+                    data = new byte[256];
+                    List<byte> listData = new List<byte>();
+                    stringBuilder.Clear();
+                    do
+                    {
+                        bytes = socketClient.Receive(data);
+                        for(int i = 0; i < data.Length; i++)
+                        {
+                            listData.Add(data[i]);
+                        }
+                        
+                        stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                    } while (socketClient.Available > 0);
+
+                    File.WriteAllBytes(filename, listData.ToArray());
 
                     socketClient.Shutdown(SocketShutdown.Both);
                     socketClient.Close();
