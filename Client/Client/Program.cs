@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -16,8 +17,11 @@ namespace Client {
                 socket.Connect(iPEndPoint);
                 int bytes = 0;
                 byte[] data = new byte[256];
-                Console.WriteLine($"Welcome to server[{ip}], enter your message to get words count:");
-                    data = Encoding.Unicode.GetBytes(Console.ReadLine());
+                Console.WriteLine($"Welcome to server[{ip}]. Enter name of txt file to send:");
+                string input = Console.ReadLine();
+                if(File.Exists(input) && input.Split('.')[1] == "txt")
+                {
+                    data = File.ReadAllBytes(input);
                     socket.Send(data);
                     StringBuilder stringBuilder = new StringBuilder();
                     do
@@ -26,6 +30,12 @@ namespace Client {
                         stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socket.Available > 0);
                     Console.WriteLine($"Got answer from server: {stringBuilder.ToString()}");
+                }
+                else
+                {
+                    Console.WriteLine("Введёно имя неверного файла");
+                }
+                    
                 
             }
             catch (Exception ex) {

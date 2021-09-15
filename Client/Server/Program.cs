@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -27,14 +28,14 @@ namespace Server {
 
                     do {
                         bytes = socketClient.Receive(data);
-                        stringBuilder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     } while (socketClient.Available > 0);
 
 
 
-                    Console.WriteLine($"Got message from client: {stringBuilder}. Words count sended.");
+                    Console.WriteLine($"Got file from client. Text in file: {stringBuilder.ToString()}");
+                    File.WriteAllBytes(DateTime.Now.ToString().Replace('.','_').Replace(':', '-').Replace(' ', '_')+".txt", data);
 
-                    socketClient.Send(Encoding.Unicode.GetBytes(GetWordsCount(stringBuilder.ToString())));
+                    socketClient.Send(Encoding.Unicode.GetBytes("File succesful got."));
 
                     socketClient.Shutdown(SocketShutdown.Both);
                     socketClient.Close();
